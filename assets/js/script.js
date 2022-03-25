@@ -18,15 +18,38 @@ var taskFormHandler = function(event) {
 
     formEl.reset();
 
-    //package up data as an object
-    var taskDataObj = {
-        name: taskNameInput,
-        type: taskTypeInput
+    //check for task id attribute to determine if editing
+    var isEdit = formEl.hasAttribute("data-task-id");
+    console.log(isEdit);
+
+    if (isEdit) {
+        var taskId = formEl.getAttribute("data-task-id");
+        completeEditTask(taskNameInput, taskTypeInput, taskId);
     }
 
-    //send it as an argument to createTaskEl
-    createTaskEl(taskDataObj);
+    else {
+        //package up data as an object
+        var taskDataObj = {
+            name: taskNameInput,
+            type: taskTypeInput
+        }
+        //send it as an argument to createTaskEl
+        createTaskEl(taskDataObj);
+    }
+}
 
+var completeEditTask = function(taskName, taskType, taskId) {
+    //find the matching task list item
+    var taskSelected = document.querySelector(".task-item[data-task-id='" + taskId + "']");
+
+    //set new values
+    taskSelected.querySelector("h3.task-name").textContent = taskName;
+    taskSelected.querySelector("span.task-type").textContent = taskType;
+
+    alert("Task Updated!");
+
+    formEl.removeAttribute("data-task-id");
+    formEl.querySelector("#save-task").textContent = "Add Task";
 }
 
 var createTaskEl = function(taskDataObj) {
