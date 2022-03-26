@@ -35,7 +35,7 @@ var taskFormHandler = function(event) {
         var taskDataObj = {
             name: taskNameInput,
             type: taskTypeInput,
-            status: "to-do"
+            status: "to do"
         }
         //send it as an argument to createTaskEl
         createTaskEl(taskDataObj);
@@ -72,14 +72,12 @@ var createTaskEl = function(taskDataObj) {
     // create list item
     var listItemEl = document.createElement("li");
     listItemEl.className = "task-item";
-
     // add task id as a custom attribute
     listItemEl.setAttribute("data-task-id", taskIdCounter);
 
     //create div to hold task info and add list to item
     var taskInfoEl = document.createElement('div');
     taskInfoEl.className = "task-info";
-
     // add HTML content to div
     taskInfoEl.innerHTML = "<h3 class='task-name'>" + taskDataObj.name + "</h3><span class='task-type'>" + taskDataObj.type + "</span>";
     listItemEl.appendChild(taskInfoEl);
@@ -88,19 +86,34 @@ var createTaskEl = function(taskDataObj) {
     var taskActionsEl = createTaskActions(taskIdCounter);
     listItemEl.appendChild(taskActionsEl);
 
-    //add entire list item to list
-    tasksToDoEl.appendChild(listItemEl);
+    switch (taskDataObj.status) {
+        case "to do":
+            taskActionsEl.querySelector("select[name='status-change']").selectedIndex = 0;
+            tasksToDoEl.appendChild(listItemEl);
+            break;
+        case "in progress":
+            taskActionsEl.querySelector("select[name='status-change']").selectedIndex = 1;
+            tasksInProgressEl.appendChild(listItemEl);
+            break;
+        case "completed":
+            taskActionsEl.querySelector("select[name='status-change']").selectedIndex = 2;
+            tasksCompletedEl.appendChild(listItemEl);
+            break;
+        default:
+            console.log("Something went wrong!");
+    }
 
     // add value of the id to the taskIdCounter varaible
     taskDataObj.id = taskIdCounter;
+
     tasks.push(taskDataObj);
 
+    //save tasks to local storage
     saveTasks();
 
     //increment the counter by 1
     taskIdCounter++;
-
-}
+};
 
 var createTaskActions = function(taskId) {
     // create container for buttons
@@ -127,10 +140,10 @@ var createTaskActions = function(taskId) {
     statusSelectEl.className = "select-status";
     statusSelectEl.setAttribute("name", "status-change");
     statusSelectEl.setAttribute("data-task-id",taskId);
-
+    actionContatinerEl.appendChild(statusSelectEl);
     var statusChoices = ["To Do", "In Progress", "Completed"];
 
-    for (var i=0; i < statusChoices.length; i ++) {
+    for (var i=0; i < statusChoices.length; i++) {
         //create option element
         var statusOptionEl = document.createElement("option");
         statusOptionEl.textContent = statusChoices[i];
@@ -140,7 +153,7 @@ var createTaskActions = function(taskId) {
         statusSelectEl.appendChild(statusOptionEl);
     }
 
-    actionContatinerEl.appendChild(statusSelectEl);
+
 
     return actionContatinerEl;
 }
@@ -214,16 +227,16 @@ var taskStatusChangeHandler = function(event) {
     var statusValue = event.target.value.toLowerCase();
 
     //find the parent task item element based on the id
-    var taskSelected = document.querySelector(".task-item[data-task-id='"+ taskId +"']");
+    var taskSelected = document.querySelector(
+        ".task-item[data-task-id='"+ taskId +"']"
+    );
 
     if (statusValue === "to do") {
         tasksToDoEl.appendChild(taskSelected);
     }
-
     else if (statusValue === "in progress") {
         tasksInProgressEl.appendChild(taskSelected);
     }
-
     else if (statusValue === "completed")
     tasksCompletedEl.appendChild(taskSelected);
 
@@ -232,7 +245,6 @@ var taskStatusChangeHandler = function(event) {
             tasks[i].status = statusValue;
         }
     }
-
     saveTasks();
 };
 
@@ -244,9 +256,11 @@ var loadTasks = function() {
     //get task items from localStorage
     var savedTasks = localStorage.getItem("tasks");
   
-    if (!tasks) {
+    if (!savedTasks) {
         return false;
     }
+
+    console.log("Saved tasks found!");
 
     //convert tasks from the string format back into an array of objects
     savedTasks = JSON.parse(savedTasks);
